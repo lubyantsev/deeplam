@@ -1,0 +1,55 @@
+<h1>Расписание: {{schedule.id}}</h1>
+
+{% if error %}
+<p style="color: red;">{{ error }}</p>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    {{ password_form.as_p }}
+    <button type="submit">Войти</button>
+</form>
+
+<h2>События</h2>
+<ul id="eventList">
+    {% for event in events %}
+    <li>{{ event.time }} - {{ event.place }} - {{ event.participant_name }}</li>
+    {% endfor %}
+</ul>
+
+<h2>Добавить событие</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ event_form.as_p }}
+    <button type="submit">Добавить событие</button>
+</form>
+
+
+<h2>Schedule: {{ schedule.password }}</h2>
+<h3>Events</h3>
+<ul id="event-list">
+    {% for event in events %}
+    <li>{{ event.time }} - {{ event.place }} - {{ event.participant_name }}</li>
+    {% endfor %}
+</ul>
+
+<h3>Add Event</h3>
+<form method="post">
+    {% csrf_token %}
+    {{ event_form.as_p }}
+    <button type="submit">Add Event</button>
+</form>
+
+<script>
+    const scheduleId = {{ schedule.id }};
+    const eventList = document.getElementById('event-list');
+
+    const socket = new WebSocket(`ws://${window.location.host}/ws/schedule/${scheduleId}/`);
+
+    socket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const newEvent = document.createElement('li');
+        newEvent.textContent = `${data.time} - ${data.place} - ${data.participant_name}`;
+        eventList.appendChild(newEvent);
+    };
+</script>
